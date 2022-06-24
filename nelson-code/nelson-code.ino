@@ -8,6 +8,7 @@ SoftwareSerial softwareSerial(9, 8); // RX, TX
 char leituraSerial[MAXSIZEBUFFER];
 
 #include "calibracao.h"
+#include "Calibracao.h"
 #include "Sensor.h"
 #include "Motor.h"
 
@@ -53,7 +54,6 @@ uint32_t tt;
 uint8_t sensorEsquerdo, sensorDireito;
 int16_t potenciaMotorEsquerdo, potenciaMotorDireito;
 uint16_t setorAtual=0;
-//uint16_t ladoPista=0;
 uint16_t contadorMarcadorSetor=0;
 uint16_t contadorMarcadorFimPista=0;
 uint8_t marcadorDireito=0;
@@ -92,6 +92,8 @@ uint32_t tempoMilis;
 //ou seja, essa função é sempre chamada
 //automaticamente essas variáveis são atualizadas por outros códigos
 void setup() {
+  cddd.teste();
+  
 	Serial.begin(38400);
 	softwareSerial.begin(38400);
 	motorDireito.potencia(0);
