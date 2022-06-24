@@ -18,7 +18,9 @@ class Motor {
     pinMode (pwm ,OUTPUT );
     digitalWrite  (pwm ,0);
   }
-   #define POTENCIA_MINIMA 255
+
+  #define POTENCIA_MINIMA 255
+  
   void potencia(int16_t v){
     if(v > 0){
       v = constrain(v,0,POTENCIA_MINIMA);

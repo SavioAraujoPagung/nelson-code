@@ -17,9 +17,7 @@ struct Calibracao{
 	float p;
 	float d;
 	float i;
-	//uint16_t ladoPista;
 	int16_t velocidade;
-	//uint16_t giroRodaSetor;
 	int idSetor;
 	
 	//parte do relatorio para envio
@@ -27,12 +25,9 @@ struct Calibracao{
 	int32_t erroAcumulado;
 };
 
-
-
 //vetor com o tamanho de setores, isso vai variar de acordo com a pista
 #define QUANTIDADE_SETORES 15
 Calibracao calibracao[QUANTIDADE_SETORES];
-Calibracao calibracaoTemp;
 uint32_t tempoSetores[QUANTIDADE_SETORES];
 
 /*ATENÇÃO!!!!!!

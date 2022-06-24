@@ -213,9 +213,7 @@ void loop(){
 	
 	//já digo que os marcadores nao estão na linha, assim a lógica abaixo simplifica
 	marcadorEsquerdo = marcadorDireito = 0;
-	
 
-	////////////////////////////////////
 	//só entra em leitura de setor quando o led apaga, isso significa que ele ignora qualquer leitura muito proxima uma da outra
 	if(tempoLed==0 || contadorMarcadorSetor!=0){
 		if(digitalRead(PINOMARCADORSETOR)==APERTADO || digitalRead(PINOMARCADORSETOR2)==APERTADO){
@@ -225,16 +223,6 @@ void loop(){
 		}
 	}
 	
-	//encoder
-	/*if(encoderValorNovo!=encoderValorAntigo && encoderValorNovo == 0){
-		giroRodaTotal++;
-		giroRodaSetor[setorAtual]++;
-	}
-	encoderValorAntigo = encoderValorNovo;
-	encoderValorNovo = digitalRead(PINOENCODERESQUERDO);
-	*/
-
-
 	marcadorDireito = (digitalRead(PINOMARCADORFIMPISTA) == APERTADO);
 	//marcador de fim de pista
 	if(marcadorDireito){
@@ -242,7 +230,6 @@ void loop(){
 	}else{
 		contadorMarcadorFimPista=0;
 	}
-
 
 	//Muda de setor
 	if(contadorMarcadorSetor == QUANTIDADELEITURAMARCADOR){
@@ -329,12 +316,6 @@ void loop(){
 	Kd = calibracao[setorAtual].d;
 	velocidade = calibracao[setorAtual].velocidade;
 	
-	//analiso se preciso usar o freio
-	//uso se tiver algum valor diferente de zero na giroRodaSetor e eu tiver atingido esse valor
-	/*if(calibracao[setorAtual].giroRodaSetor != 0 && giroRodaSetor[setorAtual] >= calibracao[setorAtual].giroRodaSetor){
-		velocidade = -255;
-	}
-	*/
 	erroAnterior = erro;
 
 	erro = calculaErro(sensorDireito,sensorEsquerdo);
@@ -362,81 +343,6 @@ void loop(){
 	
 	motorDireito.potencia(potenciaMotorDireito);
 	motorEsquerdo.potencia(potenciaMotorEsquerdo);
-	//Fim do PID
 	
-	/*//////parada por limite de pulsos:
-	if(giroRodaTotal > pulsosLimite){
-		potenciaMotorDireito = potenciaMotorEsquerdo = 0;
-		motorDireito.potencia(potenciaMotorDireito);
-		motorEsquerdo.potencia(potenciaMotorEsquerdo);
-		while(1);
-	}*/
-	
-	
-	
-	//////////////envio da telemetria
-	/*Serial.print(tentativa);
-	Serial.print(",");
-	Serial.print(setorAtual);
-	Serial.print(",");
-	Serial.print(Kp);
-	Serial.print(",");
-	Serial.print(Kd);
-	Serial.print(",");
-	Serial.print(velocidade);
-	Serial.print(",");
-	Serial.print(potenciaMotorDireito);
-	Serial.print(",");
-	Serial.print(potenciaMotorEsquerdo);
-	Serial.print(",");
-	Serial.print(erro);
-	Serial.print(",");
-	Serial.print(erroAcumulado);
-	Serial.println();
-	*/
-	/*
-	Serial.write(tentativa);
-	Serial.write(setorAtual);
-	Serial.write((uint32_t)Kp);
-	Serial.write((uint32_t)Kd);
-	Serial.write(velocidade);
-	Serial.write(potenciaMotorDireito);
-	Serial.write(potenciaMotorEsquerdo);
-	Serial.write((uint32_t)erro);
-	Serial.write((uint32_t)erroAcumulado);
-	Serial.println();
-	*/
-	/*
-	if(repeticaoTelemetria == 20){
-		repeticaoTelemetria = 0;
-		Serial.print(millis());
-		Serial.print(" ");
-		Serial.print(setorAtual);
-		Serial.print(" ");
-		Serial.print(potenciaMotorDireito);
-		Serial.print(" ");
-		Serial.print(potenciaMotorEsquerdo);
-		Serial.print(" ");
-		Serial.print(erro);
-		Serial.print(" ");
-		Serial.print(erroAcumulado);
-		Serial.println();
-	}else{
-		repeticaoTelemetria++;
-	}
-	*/
-	
-	
-	///////////// fim da telemetria
-	/*if(micros()-tt > 1000){
-		Serial.println("tururu...");
-	}*/
     while(micros()-tt < 1000 ); //500hz//1khz//2Khz
-	/*contadorLoop++;
-	if(millis()-tempoMilis >= 1000){
-		Serial.println(contadorLoop);
-		contadorLoop=0;
-		tempoMilis=millis();
-	}
-	*/
 }
