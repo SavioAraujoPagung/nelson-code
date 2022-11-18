@@ -1,6 +1,7 @@
 #include "EEPROM.h"
 #include "EEPROMDatabase.h"
-#include "Calibraca.h"
+#include "Configuracoes.h"
+#include "Utils.h"
 #include "Sensor.h"
 #include "Motor.h"
 
@@ -14,6 +15,11 @@ float Kp = 3;
 float Kd = 50;
 int16_t velocidade = 100;
 uint16_t contadorFora = 0;
+char pTemp[6];
+char dTemp[6];
+char iTemp[6];
+char textoTemp[100];
+
 #define TEMPOMAXIMOFORA 200
 
 #define TEMPOLEDACESSO_IGNORARNOVOSETOR 50
@@ -68,11 +74,11 @@ void setup() {
 	pinMode(PINOENCODERESQUERDO,INPUT_PULLUP);
 
 	sensorLinha.iniciaSensor();
-	inicioCalibracao(); //Savio, isso aqui deixa toda a configuracao estática
+	Configuracao::inicioCalibracao(setores); //Savio, isso aqui deixa toda a configuracao estática
 
 	EEPROMDatabase::recuperaConfiguracaoSetores(setores);
 	
-  	imprimeCalibracao();
+  //	imprimeCalibracao(); savio, volta com isso ao normal
 	//gravaCalibracao();
 	//pinMode(8,INPUT_PULLUP);
 	//pinMode(9,INPUT_PULLUP);
@@ -130,13 +136,13 @@ void aguardaInicio(){
 				leituraSerial[MAXSIZEBUFFER-1]=0;
 			}
 			if(leituraSerial[0] == 'r'){//solicita relatorio
-				enviaRelatorio(); //DOTO:envia os dados do relatorio do dos setores 
+				Utils::enviaRelatorio(setores); //DOTO:envia os dados do relatorio do dos setores 
 			}else{
 				Serial.println(F("entrei aqui pra calibrar"));
 				Serial.println(leituraSerial);
-				calibraVeiculo(setores);
+				Configuracao::calibraVeiculo(setores);
 				//gravaCalibracao();//todo: savio, falta passar o vetor com os setores aqui 
-				imprimeCalibracao();
+				Utils::imprimeCalibracao(setores);
 			}
 		}
 		/*
@@ -151,7 +157,7 @@ void aguardaInicio(){
 		*/
 	}
 	Serial.println(F("saiu do aguardaInicio"));
-	limpaRelatorio();
+	Utils::limpaRelatorio(setores);
 	delay(1000);
 	/*
 	if(digitalRead(BOTAO2) == APERTADO){
@@ -203,7 +209,7 @@ void loop(){
 	//Muda de setor
 	if(contadorMarcadorSetor == QUANTIDADELEITURAMARCADOR){
 		tempoLed=TEMPOLEDACESSO_IGNORARNOVOSETOR;
-		calibracao[setorAtual].tempoSetor = (millis() - tempoMilis);
+		setores[setorAtual].tempo = (millis() - tempoMilis);
 		setorAtual++;
 		tempoMilis = millis();
 		Serial.print(F("Setor: "));
@@ -246,7 +252,7 @@ void loop(){
 			delay(50);
 		}
 		setorAtual=QUANTIDADE_SETORES-1;
-		enviaRelatorio();
+		Utils::enviaRelatorio(setores);
 		while(1){
 			digitalWrite(PINO_LED,HIGH);
 			delay(200);
@@ -281,15 +287,15 @@ void loop(){
 	
 	//////////////calculo do PID
 	//carrega valores da calibração
-	Kp = calibracao[setorAtual].p;
-	Kd = calibracao[setorAtual].d;
-	velocidade = calibracao[setorAtual].velocidade;
+	Kp = setores[setorAtual].p;
+	Kd = setores[setorAtual].d;
+	velocidade = setores[setorAtual].velocidade;
 	
 	erroAnterior = erro;
 
 	erro = Configuracao::calculaErro(sensorDireito,sensorEsquerdo);
 
-	calibracao[setorAtual].erroAcumulado += abs(erro);
+	setores[setorAtual].erroAcumulado += abs(erro);
   	if(!Configuracao::naLinha(sensorEsquerdo, sensorDireito)){
 		erro = erroAnterior;
 	}

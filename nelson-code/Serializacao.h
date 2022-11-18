@@ -17,6 +17,9 @@ class Serializacao {
         return -1;
     }
 
+    //pega elemento de uma string como se fosse um vetor separado por um caractere especifico. Como:
+    //234;234;2232;2;34;556;4;3;5;4;32;
+    //posicao começa de 0
     public: static int16_t obtemPosicaoVetorString(char *substring, char* texto, char caractere, uint8_t posicao){
         int16_t inicio, fim;
         int16_t i=0;
@@ -48,6 +51,7 @@ class Serializacao {
         //Serial.println(substring);
     }
 
+    //tem q ter os caracteres, se nao dá merda
     public: static int16_t obtemSubstringVetorString(char *substring, char* texto, char caractereInicio, char caractereFim, uint8_t posicao){
         int16_t inicio, fim;
         int16_t i=0;
