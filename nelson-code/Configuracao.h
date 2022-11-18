@@ -45,10 +45,6 @@ class Configuracao {
       }
     }
 
-    void gravarValores(){
-
-    }
-
   public: static float calculaErro(int16_t a, int16_t b) {
     if (a >= FORA && b >= FORA) { //os dois estão bastante na linha branca
       return a-b;
@@ -81,7 +77,6 @@ class Configuracao {
     char atributo[20];
     char valor[10];
     uint8_t quantidadeAtributos;
-    int inicioColchete, fimColchete;
     //apago coisas desnecessárias
     Serializacao::obtemPosicaoVetorString("leituraSerial","leituraSerial",'[',1);
     Serializacao::obtemPosicaoVetorString("leituraSerial","leituraSerial",']',0);
@@ -93,7 +88,8 @@ class Configuracao {
       Serializacao::obtemSubstringVetorString(linhaTemp,"leituraSerial",'{','}',i+1);
       Serializacao::removeCaractere(linhaTemp, '"');
       Serial.println(linhaTemp);
-        quantidadeAtributos = Serializacao::retornaTamanhoVetorString(linhaTemp,',');
+
+      quantidadeAtributos = Serializacao::retornaTamanhoVetorString(linhaTemp,',');
       if(quantidadeAtributos == 0) return false; //algum erro ocorreu
 
       for(uint8_t k=0; k < quantidadeAtributos; k++){
@@ -109,13 +105,12 @@ class Configuracao {
     return true;
   }
 
-  public: static void inicioCalibracao(Configuracao configuracoes[]){
-    //uint16_t k = 0;
-    for(uint8_t k = 0; k < QUANTIDADE_SETORES; k++){
-      configuracoes[k].p=0.7;
-      configuracoes[k].d=20;
+  public: static void inicioCalibracao(Configuracao setores[]) {
+    for(uint8_t setor = 0; setor < QUANTIDADE_SETORES; setor++){
+      setores[setor].p=0.7;
+      setores[setor].d=20;
       //calibracao[k].ladoPista=1;
-      configuracoes[k].velocidade=50;
+      setores[setor].velocidade=50;
       //calibracao[k].tempoIgnoraSetor=100;
       //calibracao[k].tempoMudaSetor=100;
       //calibracao[k].tempoForaLinha=200;

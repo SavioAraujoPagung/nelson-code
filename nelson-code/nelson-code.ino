@@ -1,14 +1,26 @@
 #include "EEPROM.h"
 #include "EEPROMDatabase.h"
-#include "Configuracoes.h"
 #include "Utils.h"
 #include "Sensor.h"
 #include "Motor.h"
 
-char leituraSerial[MAXSIZEBUFFER];
+#define APERTADO LOW
+#define TEMPO_MAXIMO_FORA 200 
+#define TEMPO_LED_ACESSO_IGNORAR_NOVO_SETOR 50
+#define QUANTIDADE_LEITURA_MARCADOR 4
+#define BOTAO_2 12
+#define PINO_MARCADOR_SETOR 18
+#define PINO_MARCADOR_SETOR_2 17
+#define PINO_MARCADOR_FIM_PISTA 16
+#define PINO_ENCODER_ESQUERDO 19
+#define QUANTIDADE_TOTAL_MARCADOR_FIM_PISTA 13
+#define CONSIDERADO_LINHA 30
+#define MAX_SIZE_BUFFER 300
+#define ENDERECO_TENTATIVA 100
+
+char leituraSerial[MAX_SIZE_BUFFER];
 
 int16_t tentativa=0;
-
 float erro;
 float erroAnterior;
 float Kp = 3;
@@ -20,31 +32,16 @@ char dTemp[6];
 char iTemp[6];
 char textoTemp[100];
 
-#define TEMPOMAXIMOFORA 200
-
-#define TEMPOLEDACESSO_IGNORARNOVOSETOR 50
-
-#define QUANTIDADELEITURAMARCADOR 4
-
-#define APERTADO LOW
-
 int tempoLed=0;
 
 Sensor sensorLinha;
 Motor motorDireito(PINO4 ,PINO3 ,pwm2 );
 Motor motorEsquerdo(PINO2 ,PINO1 ,pwm1 );
 
-Configuracao setores[12];
+Configuracao setores[QUANTIDADE_SETORES];
 
 
 uint32_t tt;
-
-#define BOTAO2 12
-#define PINOMARCADORSETOR 18
-#define PINOMARCADORSETOR2 17
-#define PINOMARCADORFIMPISTA 16
-
-#define PINOENCODERESQUERDO 19
 
 uint8_t sensorEsquerdo, sensorDireito;
 int16_t potenciaMotorEsquerdo, potenciaMotorDireito;
@@ -54,7 +51,6 @@ uint16_t contadorMarcadorFimPista=0;
 uint8_t marcadorDireito=0;
 uint8_t marcadorEsquerdo=0;
 
-#define QUANTIDADETOTALMARCADORFIMPISTA 13
 uint16_t quantidadeMarcadorFimPista=0;
 uint32_t tempoMilis;
 //coloque o código nessa função
@@ -69,9 +65,9 @@ void setup() {
 	motorDireito.potencia(0);
 	motorEsquerdo.potencia(0);
 	
-	pinMode(BOTAO2, INPUT_PULLUP);
+	pinMode(BOTAO_2, INPUT_PULLUP);
 	pinMode(BOTAO, INPUT_PULLUP);
-	pinMode(PINOENCODERESQUERDO,INPUT_PULLUP);
+	pinMode(PINO_ENCODER_ESQUERDO,INPUT_PULLUP);
 
 	sensorLinha.iniciaSensor();
 	Configuracao::inicioCalibracao(setores); //Savio, isso aqui deixa toda a configuracao estática
@@ -86,9 +82,9 @@ void setup() {
 	setorAtual=setorInicial;
 	//ladoPista = calibracao[setorAtual].ladoPista;
 	//vai começar, adiciona um na tentativa
-	EEPROM.get(ENDERECOTENTATIVA,tentativa);
+	EEPROM.get(ENDERECO_TENTATIVA,tentativa);
 	tentativa++;
-	EEPROM.put(ENDERECOTENTATIVA,tentativa);
+	EEPROM.put(ENDERECO_TENTATIVA,tentativa);
 	tempoMilis=millis();
 }
 
@@ -96,13 +92,13 @@ void aguardaInicio(){
 	uint8_t sensor0=0, sensor1=0;
 	uint8_t marcador_curva1=0, marcador_curva2=0, marcador_final=0;
 	int i=0,x=0;
-	while(digitalRead(BOTAO) != APERTADO && digitalRead(BOTAO2) != APERTADO ){
+	while(digitalRead(BOTAO) != APERTADO && digitalRead(BOTAO_2) != APERTADO ){
 		sensorLinha.atualizaSensor();
 		sensor0 = sensorLinha.obtemIntensidade(0);
 		sensor1 = sensorLinha.obtemIntensidade(1);
-		marcador_curva1 = (digitalRead(PINOMARCADORSETOR)==APERTADO);
-		marcador_curva2 = (digitalRead(PINOMARCADORSETOR2)==APERTADO);
-		marcador_final = (digitalRead(PINOMARCADORFIMPISTA)==APERTADO);
+		marcador_curva1 = (digitalRead(PINO_MARCADOR_SETOR)==APERTADO);
+		marcador_curva2 = (digitalRead(PINO_MARCADOR_SETOR_2)==APERTADO);
+		marcador_final = (digitalRead(PINO_MARCADOR_FIM_PISTA)==APERTADO);
 		//sensor2 = sensorLinha.obtemIntensidade(2);
 		//sensor3 = sensorLinha.obtemIntensidade(3);
         //sensor4 = sensorLinha.obtemIntensidade(4);
@@ -120,7 +116,7 @@ void aguardaInicio(){
 		if(softwareSerial.available()>0){
 			uint32_t tempo = millis();
 			i=0;
-			while(i < MAXSIZEBUFFER){
+			while(i < MAX_SIZE_BUFFER){
 				x = softwareSerial.read();
 				if(x!=-1){
 					leituraSerial[i] = (char)x;
@@ -132,8 +128,8 @@ void aguardaInicio(){
 				}
 
 			}
-			if(i == MAXSIZEBUFFER){
-				leituraSerial[MAXSIZEBUFFER-1]=0;
+			if(i == MAX_SIZE_BUFFER){
+				leituraSerial[MAX_SIZE_BUFFER-1]=0;
 			}
 			if(leituraSerial[0] == 'r'){//solicita relatorio
 				Utils::enviaRelatorio(setores); //DOTO:envia os dados do relatorio do dos setores 
@@ -160,7 +156,7 @@ void aguardaInicio(){
 	Utils::limpaRelatorio(setores);
 	delay(1000);
 	/*
-	if(digitalRead(BOTAO2) == APERTADO){
+	if(digitalRead(BOTAO_2) == APERTADO){
 		calibracao[0].velocidade = calibracao[1].velocidade;
 		calibracao[0].p = calibracao[1].p;
 		calibracao[0].d = calibracao[1].d;
@@ -191,14 +187,14 @@ void loop(){
 
 	//só entra em leitura de setor quando o led apaga, isso significa que ele ignora qualquer leitura muito proxima uma da outra
 	if(tempoLed==0 || contadorMarcadorSetor!=0){
-		if(digitalRead(PINOMARCADORSETOR)==APERTADO || digitalRead(PINOMARCADORSETOR2)==APERTADO){
+		if(digitalRead(PINO_MARCADOR_SETOR)==APERTADO || digitalRead(PINO_MARCADOR_SETOR_2)==APERTADO){
 				contadorMarcadorSetor++;
 		}else{
 			contadorMarcadorSetor=0;
 		}
 	}
 	
-	marcadorDireito = (digitalRead(PINOMARCADORFIMPISTA) == APERTADO);
+	marcadorDireito = (digitalRead(PINO_MARCADOR_FIM_PISTA) == APERTADO);
 	//marcador de fim de pista
 	if(marcadorDireito){
 		contadorMarcadorFimPista++;
@@ -207,8 +203,8 @@ void loop(){
 	}
 
 	//Muda de setor
-	if(contadorMarcadorSetor == QUANTIDADELEITURAMARCADOR){
-		tempoLed=TEMPOLEDACESSO_IGNORARNOVOSETOR;
+	if(contadorMarcadorSetor == QUANTIDADE_LEITURA_MARCADOR){
+		tempoLed=TEMPO_LED_ACESSO_IGNORAR_NOVO_SETOR;
 		setores[setorAtual].tempo = (millis() - tempoMilis);
 		setorAtual++;
 		tempoMilis = millis();
@@ -216,9 +212,9 @@ void loop(){
 		Serial.println(setorAtual);
 	}
 
-	if(contadorMarcadorFimPista == QUANTIDADELEITURAMARCADOR){
+	if(contadorMarcadorFimPista == QUANTIDADE_LEITURA_MARCADOR){
 		quantidadeMarcadorFimPista++;
-		if(quantidadeMarcadorFimPista == QUANTIDADETOTALMARCADORFIMPISTA){
+		if(quantidadeMarcadorFimPista == QUANTIDADE_TOTAL_MARCADOR_FIM_PISTA){
 			tempoFinal = millis();
 			quantidadeMarcadorFimPista++; //para entrar só uma vez nesse if
 		}
@@ -230,7 +226,7 @@ void loop(){
 		}
 	}
 	//acabou a corrida trava o carrinho
-	if(quantidadeMarcadorFimPista >= QUANTIDADETOTALMARCADORFIMPISTA){
+	if(quantidadeMarcadorFimPista >= QUANTIDADE_TOTAL_MARCADOR_FIM_PISTA){
 		potenciaMotorDireito = potenciaMotorEsquerdo = 0;
 		//delay pra garantir que o carrinho vai passar do fim
 		motorDireito.potencia(50);
@@ -300,7 +296,7 @@ void loop(){
 		erro = erroAnterior;
 	}
     if(!Configuracao::naLinha(sensorEsquerdo, sensorDireito)){
-		if(contadorFora > TEMPOMAXIMOFORA){
+		if(contadorFora > TEMPO_MAXIMO_FORA){
 			potenciaMotorDireito = potenciaMotorEsquerdo = 0;
 			motorDireito.potencia(potenciaMotorDireito);
 			motorEsquerdo.potencia(potenciaMotorEsquerdo);
