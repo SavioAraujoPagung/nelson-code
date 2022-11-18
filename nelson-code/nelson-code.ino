@@ -1,25 +1,10 @@
-#include "Utils.h"
-
-#include <EEPROM.h>
-#include <SoftwareSerial.h>
-
-SoftwareSerial softwareSerial(9, 8); // RX, TX
-#define MAXSIZEBUFFER 300
-char leituraSerial[MAXSIZEBUFFER];
-
-#include "calibracao.h"
-#include "Calibracao.h"
+#include "EEPROM.h"
+#include "EEPROMDatabase.h"
+#include "Calibraca.h"
 #include "Sensor.h"
 #include "Motor.h"
 
-
-//variáveis globais existentes:
-//uint8_t sensor0, sensor1, sensor2, sensor3; (leitura, valores entre 0 e 100)
-//int16_t potenciaMotorEsquerdo, potenciaMotorDireito; (gravação, valores entre -255 a 255);
-#define FORA 10
-#define LINHA 95
-#define CONSIDERADO_LINHA 30
-#define ENDERECOTENTATIVA 100
+char leituraSerial[MAXSIZEBUFFER];
 
 int16_t tentativa=0;
 
@@ -42,6 +27,10 @@ int tempoLed=0;
 Sensor sensorLinha;
 Motor motorDireito(PINO4 ,PINO3 ,pwm2 );
 Motor motorEsquerdo(PINO2 ,PINO1 ,pwm1 );
+
+Configuracao setores[12];
+
+
 uint32_t tt;
 
 #define BOTAO2 12
@@ -92,21 +81,23 @@ uint32_t tempoMilis;
 //ou seja, essa função é sempre chamada
 //automaticamente essas variáveis são atualizadas por outros códigos
 void setup() {
-  cddd.teste();
-  
+	EEPROMDatabase::gravaConfiguracaoSetores(setores);
+
 	Serial.begin(38400);
 	softwareSerial.begin(38400);
 	motorDireito.potencia(0);
 	motorEsquerdo.potencia(0);
 	
-	pinMode(BOTAO2,INPUT_PULLUP);
-	pinMode(BOTAO,INPUT_PULLUP);
+	pinMode(BOTAO2, INPUT_PULLUP);
+	pinMode(BOTAO, INPUT_PULLUP);
 	pinMode(PINOENCODERESQUERDO,INPUT_PULLUP);
 
 	sensorLinha.iniciaSensor();
-	inicioCalibracao();
-	carregaCalibracao();
-	imprimeCalibracao();
+	inicioCalibracao(); //Savio, isso aqui deixa toda a configuracao estática
+
+	EEPROMDatabase::recuperaConfiguracaoSetores(setores);
+	
+  	imprimeCalibracao();
 	//gravaCalibracao();
 	//pinMode(8,INPUT_PULLUP);
 	//pinMode(9,INPUT_PULLUP);
@@ -168,8 +159,8 @@ void aguardaInicio(){
 			}else{
 				Serial.println(F("entrei aqui pra calibrar"));
 				Serial.println(leituraSerial);
-				calibraVeiculo();
-				gravaCalibracao();
+				calibraVeiculo(setores);
+				//gravaCalibracao();//todo: savio, falta passar o vetor com os setores aqui 
 				imprimeCalibracao();
 			}
 		}
@@ -200,6 +191,7 @@ void aguardaInicio(){
 uint32_t tempoInicial, tempoFinal;
 uint16_t contadorLoop=0;
 char leituraVelocidade=0;
+
 void loop(){
 	tt = micros();
 	//verifica se tem algo na serial para calibrar
@@ -249,7 +241,7 @@ void loop(){
 			tempoFinal = millis();
 			quantidadeMarcadorFimPista++; //para entrar só uma vez nesse if
 		}
-//		guardo o tempo da volta
+		//guardo o tempo da volta
 		if(contadorMarcadorFimPista == 0){
 			tempoInicial = millis();
 			Serial.print("Comecou: ");
