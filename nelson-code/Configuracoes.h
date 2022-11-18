@@ -14,7 +14,6 @@
 #define QUANTIDADE_SETORES 15
 
 //configuracao do arquivo principal
-#define FORA 10
 #define LINHA 95
 #define CONSIDERADO_LINHA 30
 #define ENDERECOTENTATIVA 100

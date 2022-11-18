@@ -50,31 +50,6 @@ uint8_t marcadorEsquerdo=0;
 
 #define QUANTIDADETOTALMARCADORFIMPISTA 13
 uint16_t quantidadeMarcadorFimPista=0;
-
-bool naLinha(){
-  if(sensorDireito > FORA || sensorEsquerdo > FORA) return true;
-  else return false;
-}
-
-bool naLinha(int16_t sensor){
-  if(sensor > FORA){
-    return true;
-  }
-  return false;
-  
-}
-float calculaErro(int16_t a, int16_t b) {
-  if (a >= FORA && b >= FORA) { //os dois estão bastante na linha branca
-    return a-b;
-  }
-  else if (a < FORA && b >= FORA) { //o A saiu da linha
-    return (200 - b )* -1;
-  }
-  else if (a >= FORA && b < FORA) { // o B saiu da linha
-    return (200 - a);
-  }
-  return 0;
-}
 uint32_t tempoMilis;
 //coloque o código nessa função
 //atenção, não pode ter um while travando a saida da função. Ela tem que ficar em loop
@@ -312,12 +287,13 @@ void loop(){
 	
 	erroAnterior = erro;
 
-	erro = calculaErro(sensorDireito,sensorEsquerdo);
+	erro = Configuracao::calculaErro(sensorDireito,sensorEsquerdo);
+
 	calibracao[setorAtual].erroAcumulado += abs(erro);
-  	if(!naLinha()){
+  	if(!Configuracao::naLinha(sensorEsquerdo, sensorDireito)){
 		erro = erroAnterior;
 	}
-    if(!naLinha()){
+    if(!Configuracao::naLinha(sensorEsquerdo, sensorDireito)){
 		if(contadorFora > TEMPOMAXIMOFORA){
 			potenciaMotorDireito = potenciaMotorEsquerdo = 0;
 			motorDireito.potencia(potenciaMotorDireito);

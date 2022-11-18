@@ -214,7 +214,6 @@ int inicioColchete, fimColchete;
 /*essa função aqui faz leitura dos dados por JSON via string, fiz meu próprio parser*/
 //todo: savio calibra o veiculo!! lkkk
 bool calibraVeiculo(Configuracao configuracoes[12]){
-
 	//apago coisas desnecessárias
 	Serializacao::obtemPosicaoVetorString("leituraSerial","leituraSerial",'[',1);
 	Serializacao::obtemPosicaoVetorString("leituraSerial","leituraSerial",']',0);
