@@ -11,15 +11,6 @@ uint16_t setorInicial=0;
 uint16_t pulsosLimite=0;
 uint16_t pulsosMarcacao=0;
 
-//pino onde ficam ligado os motores
-#define  pwm1 3
-#define  PINO1 4
-#define  PINO2 2
-
-#define  pwm2 11
-#define  PINO3 6
-#define  PINO4 7
-
 SoftwareSerial softwareSerial(9, 8); // RX, TX
 
 class Utils{

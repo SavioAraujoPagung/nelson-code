@@ -1,3 +1,5 @@
+#ifndef SERIALIZACAO_H
+#define SERIALIZACAO_H
 
 class Serializacao {
     private: static int16_t retornaPosicaoCharString(char* texto, char caractere, uint8_t ocorrencia){
@@ -111,3 +113,5 @@ class Serializacao {
         }
     }
 };
+
+#endif

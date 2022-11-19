@@ -1,4 +1,3 @@
-#include "EEPROM.h"
 #include "EEPROMDatabase.h"
 #include "Utils.h"
 #include "Sensor.h"
@@ -18,47 +17,29 @@
 #define MAX_SIZE_BUFFER 300
 #define ENDERECO_TENTATIVA 100
 
-char leituraSerial[MAX_SIZE_BUFFER];
-
-int16_t tentativa=0;
-float erro;
-float erroAnterior;
-float Kp = 3;
-float Kd = 50;
-int16_t velocidade = 100;
-uint16_t contadorFora = 0;
-char pTemp[6];
-char dTemp[6];
-char iTemp[6];
-char textoTemp[100];
-
-int tempoLed=0;
-
 Sensor sensorLinha;
-Motor motorDireito(PINO4 ,PINO3 ,pwm2 );
+
+//pino onde ficam ligado os motores
+#define  pwm1 3
+#define  PINO1 4
+#define  PINO2 2
 Motor motorEsquerdo(PINO2 ,PINO1 ,pwm1 );
+
+#define  pwm2 11
+#define  PINO3 6
+#define  PINO4 7
+Motor motorDireito(PINO4 ,PINO3 ,pwm2 );
 
 Configuracao setores[QUANTIDADE_SETORES];
 
-
-uint32_t tt;
-
-uint8_t sensorEsquerdo, sensorDireito;
-int16_t potenciaMotorEsquerdo, potenciaMotorDireito;
 uint16_t setorAtual=0;
-uint16_t contadorMarcadorSetor=0;
-uint16_t contadorMarcadorFimPista=0;
-uint8_t marcadorDireito=0;
-uint8_t marcadorEsquerdo=0;
-
-uint16_t quantidadeMarcadorFimPista=0;
 uint32_t tempoMilis;
 //coloque o código nessa função
 //atenção, não pode ter um while travando a saida da função. Ela tem que ficar em loop
 //ou seja, essa função é sempre chamada
 //automaticamente essas variáveis são atualizadas por outros códigos
 void setup() {
-	EEPROMDatabase::gravaConfiguracaoSetores(setores);
+  int16_t tentativa=0;
 
 	Serial.begin(38400);
 	softwareSerial.begin(38400);
@@ -89,6 +70,7 @@ void setup() {
 }
 
 void aguardaInicio(){
+	char leituraSerial[MAX_SIZE_BUFFER];
 	uint8_t sensor0=0, sensor1=0;
 	uint8_t marcador_curva1=0, marcador_curva2=0, marcador_final=0;
 	int i=0,x=0;
@@ -99,15 +81,9 @@ void aguardaInicio(){
 		marcador_curva1 = (digitalRead(PINO_MARCADOR_SETOR)==APERTADO);
 		marcador_curva2 = (digitalRead(PINO_MARCADOR_SETOR_2)==APERTADO);
 		marcador_final = (digitalRead(PINO_MARCADOR_FIM_PISTA)==APERTADO);
-		//sensor2 = sensorLinha.obtemIntensidade(2);
-		//sensor3 = sensorLinha.obtemIntensidade(3);
-        //sensor4 = sensorLinha.obtemIntensidade(4);
-        //sensor5 = sensorLinha.obtemIntensidade(5);
 		if(sensor0 > CONSIDERADO_LINHA || sensor1 > CONSIDERADO_LINHA
 		|| marcador_curva1 == true || marcador_curva2 == true || marcador_final == true){
 			digitalWrite(PINO_LED,HIGH);
-		//}else if(digitalRead(8) == APERTADO || digitalRead(9) == APERTADO/*|| digitalRead(5)== APERTADO*/){
-		//	digitalWrite(PINO_LED,HIGH);
 		}
 		else{
 			digitalWrite(PINO_LED,LOW);
@@ -131,6 +107,7 @@ void aguardaInicio(){
 			if(i == MAX_SIZE_BUFFER){
 				leituraSerial[MAX_SIZE_BUFFER-1]=0;
 			}
+      
 			if(leituraSerial[0] == 'r'){//solicita relatorio
 				Utils::enviaRelatorio(setores); //DOTO:envia os dados do relatorio do dos setores 
 			}else{
@@ -141,33 +118,28 @@ void aguardaInicio(){
 				Utils::imprimeCalibracao(setores);
 			}
 		}
-		/*
-		Serial.print("\nerro: ");
-		erro = calculaErro(sensor0,sensor1);
-		Serial.println(erro);
-		Serial.print("MD: ");
-		Serial.print(velocidade - ((int)((erro*sqrt(abs(erro))*Kp))));
-		Serial.print(" ME: ");
-		Serial.print(velocidade + ((int)((erro*sqrt(abs(erro))*Kp))));
-		delay(100);
-		*/
 	}
 	Serial.println(F("saiu do aguardaInicio"));
 	Utils::limpaRelatorio(setores);
 	delay(1000);
-	/*
-	if(digitalRead(BOTAO_2) == APERTADO){
-		calibracao[0].velocidade = calibracao[1].velocidade;
-		calibracao[0].p = calibracao[1].p;
-		calibracao[0].d = calibracao[1].d;
-	}
-	*/
-	
 }
 
+float erro;
+float erroAnterior;
+float Kp = 3;
+float Kd = 50;
+int16_t velocidade = 100;
+uint16_t contadorFora = 0;
+uint8_t sensorEsquerdo, sensorDireito;
+int16_t potenciaMotorEsquerdo, potenciaMotorDireito;
+uint32_t tt;
+uint16_t contadorMarcadorSetor=0;
+uint16_t contadorMarcadorFimPista=0;
+uint8_t marcadorDireito=0;
+uint8_t marcadorEsquerdo=0;
+uint16_t quantidadeMarcadorFimPista=0;
+int tempoLed=0;
 uint32_t tempoInicial, tempoFinal;
-uint16_t contadorLoop=0;
-char leituraVelocidade=0;
 
 void loop(){
 	tt = micros();
@@ -247,6 +219,7 @@ void loop(){
 			//Serial.println(giroRodaSetor[i]);
 			delay(50);
 		}
+    
 		setorAtual=QUANTIDADE_SETORES-1;
 		Utils::enviaRelatorio(setores);
 		while(1){
@@ -286,16 +259,15 @@ void loop(){
 	Kp = setores[setorAtual].p;
 	Kd = setores[setorAtual].d;
 	velocidade = setores[setorAtual].velocidade;
-	
 	erroAnterior = erro;
-
-	erro = Configuracao::calculaErro(sensorDireito,sensorEsquerdo);
+	erro = Sensor::calculaErro(sensorDireito,sensorEsquerdo);
 
 	setores[setorAtual].erroAcumulado += abs(erro);
-  	if(!Configuracao::naLinha(sensorEsquerdo, sensorDireito)){
+  if(!Sensor::naLinha(sensorEsquerdo, sensorDireito)){
 		erro = erroAnterior;
 	}
-    if(!Configuracao::naLinha(sensorEsquerdo, sensorDireito)){
+
+  if(!Sensor::naLinha(sensorEsquerdo, sensorDireito)){
 		if(contadorFora > TEMPO_MAXIMO_FORA){
 			potenciaMotorDireito = potenciaMotorEsquerdo = 0;
 			motorDireito.potencia(potenciaMotorDireito);
@@ -303,9 +275,10 @@ void loop(){
 			return;
 		}
 		contadorFora++;
-    }else{
+  }else{
 		contadorFora=0;
 	}
+
 	if(setorAtual==QUANTIDADE_SETORES-1){
 		velocidade = 0;
 	}
@@ -316,5 +289,5 @@ void loop(){
 	motorDireito.potencia(potenciaMotorDireito);
 	motorEsquerdo.potencia(potenciaMotorEsquerdo);
 	
-    while(micros()-tt < 1000 ); //500hz//1khz//2Khz
+  while(micros()-tt < 1000 ); //500hz//1khz//2Khz
 }
