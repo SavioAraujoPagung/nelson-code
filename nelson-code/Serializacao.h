@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 class Serializacao {
     private: static int16_t retornaPosicaoCharString(char* texto, char caractere, uint8_t ocorrencia);
 
@@ -12,3 +14,4 @@ class Serializacao {
     public: static uint8_t retornaTamanhoVetorString(char* texto, char caractere);
     public: static void removeCaractere(char * texto, char caractere);
 };
+

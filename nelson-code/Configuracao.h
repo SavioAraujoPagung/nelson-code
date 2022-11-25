@@ -1,4 +1,4 @@
-#include "Serializacao.cpp"
+#include "Serializacao.h"
 
 #define FORA 10
 #define QUANTIDADE_SETORES 15
