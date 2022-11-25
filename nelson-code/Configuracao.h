@@ -1,4 +1,7 @@
 #include "Serializacao.h"
+#include <SoftwareSerial.h>
+#include <string.h> 
+#include <stdlib.h>
 
 #define FORA 10
 #define QUANTIDADE_SETORES 15
@@ -62,7 +65,6 @@ class Configuracao {
     for(uint8_t i=0; i < quantidadeIndices-1; i++){//o ultimo indice é vazio
       Serializacao::obtemSubstringVetorString(linhaTemp,"leituraSerial",'{','}',i+1);
       Serializacao::removeCaractere(linhaTemp, '"');
-      Serial.println(linhaTemp);
 
       quantidadeAtributos = Serializacao::retornaTamanhoVetorString(linhaTemp,',');
       if(quantidadeAtributos == 0) return false; //algum erro ocorreu
