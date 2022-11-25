@@ -57,8 +57,6 @@ void setup() {
 	
   //	imprimeCalibracao(); savio, volta com isso ao normal
 	//gravaCalibracao();
-	//pinMode(8,INPUT_PULLUP);
-	//pinMode(9,INPUT_PULLUP);
 	aguardaInicio();
 	setorAtual=setorInicial;
 	//ladoPista = calibracao[setorAtual].ladoPista;
