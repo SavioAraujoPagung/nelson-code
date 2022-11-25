@@ -30,7 +30,7 @@ Motor motorEsquerdo(PINO2 ,PINO1 ,pwm1 );
 #define  PINO4 7
 Motor motorDireito(PINO4 ,PINO3 ,pwm2 );
 
-Configuracao setores[QUANTIDADE_SETORES];
+Configuracao setores[12];
 
 uint16_t setorAtual=0;
 uint32_t tempoMilis;

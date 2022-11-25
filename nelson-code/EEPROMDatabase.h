@@ -22,6 +22,7 @@ class EEPROMDatabase
       gravarConfiguracao(setores[setor]);
     }
   }
+  
   public: static void recuperaConfiguracaoSetores(Configuracao setores[]){
     //carrega também o setor inicial atual, isso é uma variável que utilizo se quiser
     //começar a correr no meio da pista, isso serve pra facilitar o teste

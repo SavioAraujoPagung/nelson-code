@@ -1,4 +1,4 @@
-#include "Serializacao.h"
+#include "Serializacao.cpp"
 
 #define FORA 10
 #define QUANTIDADE_SETORES 15
@@ -46,7 +46,7 @@ class Configuracao {
     }
 
   /*essa função aqui faz leitura dos dados por JSON via string, fiz meu próprio parser*/
-  public: static bool calibraVeiculo(Configuracao configuracoes[12]){
+  public: static bool calibraVeiculo(Configuracao setores[]){
     char linhaTemp[100];
     char temp[30];
     char atributo[20];
@@ -71,7 +71,7 @@ class Configuracao {
         Serializacao::obtemPosicaoVetorString(temp,linhaTemp,',',k);
         Serializacao::obtemPosicaoVetorString(atributo,temp,':',0);
         Serializacao::obtemPosicaoVetorString(valor,temp,':',1);
-        configuracoes[i].insereValorCalibracao(atributo, valor);
+        setores[i].insereValorCalibracao(atributo, valor);
       }
 
       linhaTemp[0]=0;
